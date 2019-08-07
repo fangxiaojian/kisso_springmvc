@@ -1,0 +1,26 @@
+@startuml
+       所有请求 --> SSOSpringInterceptor: 登录权限拦截器 
+	   SSOSpringInterceptor -> SSOSpringInterceptor:使用method.getAnnotation(Login.class)获取自定义注解  preHandle方法判断是否跳过验证Action.Skip 
+       SSOSpringInterceptor -> SSOHelper: getSSOToken(request)获取SSOToken判断是否登录 通过getSSOTokenFromCookie(request)获取的token，用token的id在redis中查找
+	   SSOHelper -> SSOSpringInterceptor: 返回redis中查找的SSOToken
+	   SSOSpringInterceptor --> 所有请求: 若SSOToken为空，跳转到登录界面，或处理ajax请求
+       SSOSpringInterceptor -> 请求对应的控制方法: 若SSOToken不为空，正常请求执行
+       所有请求 --> LoginController: /loginpost 请求
+	   LoginController -> WafRequestWrapper: 获取用户登录参数时过滤SQL注入、XSS攻击
+	   WafRequestWrapper -> WafHelper: stripXSS() Pattern.compile XSS内容剥离
+	   WafRequestWrapper <- WafHelper: 返回用户请求参数
+	   WafRequestWrapper -> WafHelper: stripSqlInjection() replaceAll 剥离SQL注入部分代码
+	   WafRequestWrapper <- WafHelper: 返回用户请求参数
+	   LoginController <- WafRequestWrapper: 返回用户请求参数
+	   LoginController -> UserService: 根据账号密码获取用户
+	   LoginController <- UserService: 返回用户
+	   LoginController -> LoginController: 创建SSOToken并将用户ID和账号名称存入SSOToken
+	   LoginController -> SSOHelper: setCookie(request,response,SSOToken)创建并存储cookie
+	   SSOHelper -> CookieHelper: Session.invalidate();setAttribute(); 删除当前的JSESSIONID，创建值为随机字符串的JSESSIONID，防SESSIONID攻击
+	   SSOHelper -> AbstractKissoService: setCookie方法
+	   AbstractKissoService -> JwtHelper: 签名并生成Token RSA签名/对称加密
+	   AbstractKissoService <- JwtHelper: 返回加密后的token
+	   AbstractKissoService -> AbstractKissoService: 将token存入redis缓存中，key为token的id即为用户ID
+	   AbstractKissoService -> AbstractKissoService: response.addCookie 存入cookie，key为自定义字符串
+	   LoginController -> 所有请求: 跳转页面
+@enduml
