@@ -20,7 +20,8 @@
 	   SSOHelper -> AbstractKissoService: setCookie方法
 	   AbstractKissoService -> JwtHelper: 签名并生成Token RSA签名/对称加密
 	   AbstractKissoService <- JwtHelper: 返回加密后的token
-	   AbstractKissoService -> AbstractKissoService: 将token存入redis缓存中，key为token的id即为用户ID
-	   AbstractKissoService -> AbstractKissoService: response.addCookie 存入cookie，key为自定义字符串
+	   AbstractKissoService -> RedisCache: 将token存入redis缓存中，key为 标识符+用户ID
+	   AbstractKissoService -> CookieHelper: CookieHelper.addHttpOnlyCookie(response, cookie); \n cookie 标记为 http only , 这样的话 js 中的 document.cookie 语句就不能获取到 cookie
+	   CookieHelper -> CookieHelper: 将cookie中的字段拼接成字符串，存入response.addHeader("Set-Cookie", sf.toString());
 	   LoginController -> 所有请求: 跳转页面
 @enduml

@@ -44,17 +44,25 @@
     <!-- 配置静态资源，直接映射到对应的文件夹，DispatcherServlet 不处理 -->
     <mvc:resources mapping="/static/**" location="/WEB-INF/static/"/>
 
+    <context:property-placeholder location="classpath:properties/sso.properties" />
+
     <!--  kisso 注入初始化，也支持使用 web.xml 初始化 -->
     <bean id="initKisso" class="com.baomidou.kisso.springmvc.WebKissoConfigurer" init-method="initKisso">
         <property name="ssoConfig" ref="ssoConfig"/>
         <!--<property name="ssoPropPath" value="properties/sso.properties"/>-->
     </bean>
     <bean id="ssoConfig" class="com.baomidou.kisso.SSOConfig">
-        <property name="cookieName" value="kisso_test"/>
-        <property name="signkey" value="3QD2j1d1s5Uj1jx6q8"/>
-        <property name="logoutUrl" value="/logout"/>
-        <property name="loginUrl" value="/login"/>
+        <property name="cookieName" value="${sso.cookie.name}"/>
+        <property name="signkey" value="${sso.secretkey}"/>
+        <property name="logoutUrl" value="${sso.logout.url}"/>
+        <property name="loginUrl" value="${sso.login.url}"/>
+        <property name="cookieDomain" value="${sso.cookie.domain}"/>
+        <property name="cache" ref="redisCache"></property>
+        <property name="cacheExpires" value="${sso.cache.expires}"></property>
     </bean>
+    <bean id="redisCache" class="${sso.cache.class}"></bean>
+
+
     <mvc:interceptors>
         <!-- SSO 拦截器 -->
         <!-- path 对所有的请求拦截使用/**，对某个模块下的请求拦截使用：/myPath/* -->

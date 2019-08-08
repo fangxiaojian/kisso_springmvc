@@ -15,6 +15,7 @@
  */
 package com.baomidou.kisso.springmvc.controller;
 
+import com.baomidou.kisso.common.util.HttpUtil;
 import com.baomidou.kisso.springmvc.model.User;
 import com.baomidou.kisso.springmvc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,11 @@ public class LoginController extends BaseController {
     @RequestMapping("/login")
     public String login() {
         SSOToken st = SSOHelper.getSSOToken(request);
+        String returnURL = request.getParameter("ReturnURL");
+        request.setAttribute("ReturnURL", returnURL);
         if (st != null) {
-            return redirectTo("/index.html");
+            returnURL = HttpUtil.decodeURL(returnURL);
+            return redirectTo(returnURL);
         }
         return "login";
     }
@@ -58,6 +62,7 @@ public class LoginController extends BaseController {
         /**
          * 生产环境需要过滤sql注入
          */
+        String returnURL = request.getParameter("ReturnURL");
         WafRequestWrapper req = new WafRequestWrapper(request);
         String username = req.getParameter("username");
         String password = req.getParameter("password");
@@ -73,10 +78,15 @@ public class LoginController extends BaseController {
                     SSOToken.create().setId(user.getId()).setIssuer(user.getUsername()),
                     true);// true 会销毁当前 JsessionId 如果用到了 session 相关改为 false
 
+            returnURL = HttpUtil.decodeURL(returnURL);
+            request.getSession().removeAttribute("ReturnURL");
 			/*
              * 登录需要跳转登录前页面，自己处理 ReturnURL 使用
 			 * HttpUtil.decodeURL(xx) 解码后重定向
 			 */
+			if (returnURL != null){
+                return redirectTo(returnURL);
+            }
             return redirectTo("/index.html");
         }
         return "login";

@@ -3,7 +3,7 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 </head>
 <body style="text-align: center;margin-top: 168px;">
-	<h1>Kisso - SpringMvc</h1>
+	<h1>Kisso</h1>
 	<div class="table_box">
 		<p>$!{userName} 欢迎来到 SpringMvc-SSO 极速开发世界！</p>
 		<br>
