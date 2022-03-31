@@ -9,7 +9,7 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<spring.version>4.3.10.RELEASE</spring.version>
+		<spring.version>5.3.18</spring.version>
 		<aspectjweaver.version>1.8.10</aspectjweaver.version>
 		<velocity.version>1.7</velocity.version>
 		<velocity-tools.version>2.0</velocity-tools.version>
